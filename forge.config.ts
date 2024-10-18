@@ -11,6 +11,7 @@ import PortableMaker from "@rabbitholesyndrome/electron-forge-maker-portable";
 
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
+import { entryPoints } from './webpack.entryPoints';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -30,16 +31,7 @@ const config: ForgeConfig = {
       mainConfig,
       renderer: {
         config: rendererConfig,
-        entryPoints: [
-          {
-            html: './src/index.html',
-            js: './src/renderer.ts',
-            name: 'main_window',
-            preload: {
-              js: './src/preload.ts',
-            },
-          },
-        ],
+        entryPoints,
       },
     }),
     // Fuses are used to enable/disable various Electron functionality

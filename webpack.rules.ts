@@ -28,4 +28,21 @@ export const rules: Required<ModuleOptions>['rules'] = [
       },
     },
   },
+  {
+    test: /\.vue$/, // 解析vue文件
+    exclude: /(node_modules|\.webpack)/,
+    loader: 'vue-loader'
+  },
+  {
+    test: /\.scss$/, // 解析scss文件
+    exclude: /(node_modules|\.webpack)/,
+    use: [
+      // 将js字符串生成为style节点
+      "style-loader",
+      // 将css转化为CommonJS模块
+      "css-loader",
+      // 将sass编译成css
+      "sass-loader",
+    ]
+  },
 ];

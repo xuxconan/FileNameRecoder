@@ -1,16 +1,23 @@
-import { app, dialog, ipcMain, nativeTheme, BaseWindow, BrowserViewConstructorOptions } from 'electron';
+import { app, dialog, ipcMain, nativeTheme, BaseWindow, BrowserWindowConstructorOptions } from 'electron';
 import path from "node:path";
 
 import { CHANNEL_THEME_CHANGED, CHANNEL_THEME_CURRENT } from '../events';
 import Main from '../wins/Main';
 import Test from '../wins/Test';
 
+import { APP_SETTING_FILE } from '../consts';
+import { AppData } from '../utils/native';
+
 import { IAppOptions } from './interface';
 
 export default class App {
   win: BaseWindow;
+  settings: AppData;
 
   constructor(options?: IAppOptions) {
+    const settings = new AppData("appData", APP_SETTING_FILE);
+    this.settings = settings;
+
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
     if (require('electron-squirrel-startup')) {
       app.quit();
@@ -71,10 +78,24 @@ export default class App {
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') app.quit()
     })
+
+    app.on("quit", () => {
+      settings.Write({ theme: nativeTheme.themeSource });
+    })
   }
 
-  createMainWindow(options?: BrowserViewConstructorOptions) {
+  async createMainWindow(options?: BrowserWindowConstructorOptions) {
+    // 获取上次配置
+    const settings = this.settings;
+    const { x, y, width, height, fullscreen, theme } = (await settings.Read()) ?? {};
+    options.x = options.x ?? x;
+    options.y = options.y ?? y;
+    options.width = options.width ?? width ?? 800;
+    options.height = options.height ?? height ?? 600;
+    options.fullscreen = options.fullscreen ?? fullscreen ?? false;
+    if (theme) nativeTheme.themeSource = theme;
+
     this.win = new Main(options);
-    new Test(options); // 测试用
+    // new Test(options); // 测试多窗口用
   }
 }

@@ -15,6 +15,14 @@ module.exports = {
     "plugin:vue/vue3-essential",
     "@vue/typescript/recommended",
   ],
+  settings: {
+    "import/resolver": {
+      alias: {
+        map: [["@", "./src"]],
+        extensions: [".tsx", ".ts", ".jsx", ".js", '.css'],
+      }
+    }
+  },
   parser: "@typescript-eslint/parser",
   rules: {
     //

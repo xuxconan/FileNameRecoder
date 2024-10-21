@@ -19,8 +19,7 @@ export const rendererConfig: Configuration = {
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css'],
     alias: {
-      "@": resolve("src"),
-      "@renderer": resolve(".webpack/renderer"),
+      "@": resolve("src")
     }
   },
 };

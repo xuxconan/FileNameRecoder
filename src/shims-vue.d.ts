@@ -7,3 +7,5 @@ declare module '*.vue' {
 
 declare module "*.sass";
 declare module "*.scss";
+
+declare module "module-alias";

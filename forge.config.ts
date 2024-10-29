@@ -13,6 +13,8 @@ import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
 import { entryPoints } from './webpack.entryPoints';
 
+console.log("process.env", process.env);
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,

@@ -1,5 +1,6 @@
-import { BrowserWindow, BrowserViewConstructorOptions, globalShortcut } from 'electron';
+import { BrowserWindow, globalShortcut, nativeTheme } from 'electron';
 
+import { IMainOptions } from '../../interfaces';
 import { APP_SETTING_FILE } from '../../consts';
 import { AppData } from '../../utils/native';
 
@@ -10,7 +11,7 @@ declare const MAIN_PRELOAD_WEBPACK_ENTRY: string;
 export default class Main extends BrowserWindow {
   settings: AppData;
 
-  constructor(options?: BrowserViewConstructorOptions) {
+  constructor(options?: IMainOptions) {
     super({
       webPreferences: {
         preload: MAIN_PRELOAD_WEBPACK_ENTRY
@@ -19,7 +20,7 @@ export default class Main extends BrowserWindow {
     });
     this.loadURL(MAIN_WEBPACK_ENTRY);
 
-    const settings = new AppData("appData", APP_SETTING_FILE);
+    const settings = options?.settings ?? new AppData("appData", APP_SETTING_FILE);
     this.settings = settings;
 
     this.setMenu(null);
@@ -50,7 +51,10 @@ export default class Main extends BrowserWindow {
         fullscreen: this.isFullScreen(),
         maximize: this.isMaximized(),
         console: webContents.isDevToolsOpened(),
-      })
+      });
+
+      // 移除nativeTheme监听
+      nativeTheme.removeAllListeners("updated");
     })
   }
 }

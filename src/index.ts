@@ -1,4 +1,3 @@
-
 import { APP_SCHEMES } from './consts';
 
 import App from "./app";

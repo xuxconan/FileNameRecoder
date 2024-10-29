@@ -1,14 +1,14 @@
-import { app, dialog, ipcMain, nativeTheme, BaseWindow, BrowserWindowConstructorOptions } from 'electron';
+import { app, session, dialog, nativeTheme, BaseWindow, BrowserWindowConstructorOptions } from 'electron';
 import path from "node:path";
 
-import { CHANNEL_THEME_CHANGED, CHANNEL_THEME_CURRENT } from '../events';
 import Main from '../wins/Main';
 import Test from '../wins/Test';
+import ChannelTheme from "../channels/Theme/main";
 
 import { APP_SETTING_FILE } from '../consts';
 import { AppData } from '../utils/native';
 
-import { IAppOptions } from './interface';
+import { IAppOptions } from '../interfaces';
 
 export default class App {
   win: BaseWindow;
@@ -37,14 +37,11 @@ export default class App {
       app.setAsDefaultProtocolClient(schemes);
     }
 
-    // 注册全局主题切换方法
-    ipcMain.handle(CHANNEL_THEME_CHANGED, function (event, value) {
-      nativeTheme.themeSource = value;
-      return nativeTheme.themeSource;
-    })
-    ipcMain.handle(CHANNEL_THEME_CURRENT, function () {
-      return nativeTheme.themeSource;
-    })
+    // 设置channel处理
+    ChannelTheme.SetSrc();
+    ChannelTheme.GetSrc();
+    ChannelTheme.GetIsDark();
+    ChannelTheme.ListenSysThemeUpdated();
 
     // 避免程序多开
     const singletonLock = app.requestSingleInstanceLock();
@@ -63,6 +60,16 @@ export default class App {
       // 如果没有窗口打开则打开一个窗口 (macOS)
       // app.on('ready', createWindow);
       app.whenReady().then(() => {
+
+        // https://www.electronjs.org/docs/latest/tutorial/security
+        session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+          callback({
+            responseHeaders: {
+              ...details.responseHeaders,
+              'Content-Security-Policy': ['default-src \'self\' \'unsafe-inline\' \'unsafe-eval\';']
+            }
+          })
+        })
 
         this.createMainWindow(options);
 
@@ -95,7 +102,10 @@ export default class App {
     options.fullscreen = options.fullscreen ?? fullscreen ?? false;
     if (theme) nativeTheme.themeSource = theme;
 
-    this.win = new Main(options);
+    this.win = new Main({
+      settings: settings,
+      ...options
+    });
     // new Test(options); // 测试多窗口用
   }
 }

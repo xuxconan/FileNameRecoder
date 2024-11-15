@@ -48,8 +48,7 @@ export default class ChannelTheme extends Channel {
     console.assert(!!nativeTheme, "NativeTheme unavailable !!");
     nativeTheme.addListener("updated", () => {
       if (nativeTheme.themeSource !== THEME_SYSTEM) return;
-      const theme = nativeTheme.shouldUseDarkColors ? THEME_DARK : THEME_LIGHT;
-      ChannelTheme.broadcastToAllWebContents(ON_SYS_UPDATED, theme);
+      ChannelTheme.broadcastToAllWebContents(ON_SYS_UPDATED, nativeTheme.shouldUseDarkColors);
     })
   }
 }

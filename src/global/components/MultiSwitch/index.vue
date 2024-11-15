@@ -2,12 +2,14 @@
   <v-slider
     v-model="slideValue"
     class="multi_switch"
+    thumb-label="always"
     track-fill-color="transparent"
     :min="-1"
     :max="max"
     :step="1"
     :color="color"
     :show-ticks="false"
+    :hide-details="true"
     :thumb-size="size"
     :track-size="size"
     :max-width="maxWidth"
@@ -15,7 +17,11 @@
     @click.capture="onClick"
 
     v-bind="$attrs"
-  ></v-slider>
+  >
+    <template #thumb-label>
+      <v-icon v-if="icon" :icon="icon" />
+    </template>
+  </v-slider>
 </template>
 
 <script lang="ts" setup>
@@ -34,9 +40,13 @@ const slideValue = ref(0);
 const max = computed(() => {
   return props.options?.length || 0;
 })
+const icon = computed(() => {
+  const options: any[] = props.options;
+  return options?.[slideValue.value]?.icon;
+})
 const color = computed(() => {
   const options: any[] = props.options;
-  return options?.[slideValue.value]?.color;
+  return options?.[slideValue.value]?.color ?? "surface";
 })
 
 watch(() => props.modelValue, () => {

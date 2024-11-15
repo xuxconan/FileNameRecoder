@@ -1,17 +1,35 @@
 <template>
   <div class="main">
-    <v-toolbar
-      density="compact"
-      :elevation="8"
-      :title="channelProcess.Env.APP_TITLE"
-    >
+    <v-toolbar density="compact" :elevation="8" :title="channelProcess.Env.APP_TITLE">
       <v-spacer></v-spacer>
-      <MultiSwitch
-        v-model="themeValue"
-        size="20px"
-        max-width="30px"
-        :options="themeOptions"
-      ></MultiSwitch>
+
+      <!-- 语言选择 -->
+      <v-menu transition="slide-y-transition">
+        <!-- 按钮 -->
+        <template v-slot:activator="{ props }">
+          <v-btn icon="mdi-translate" variant="text" v-bind="props"></v-btn>
+        </template>
+        <!-- 列表 -->
+        <v-list density="compact">
+          <v-list-subheader>{{ i18n.t("web.main.locale_options_title") }}</v-list-subheader>
+          <v-list-item
+            v-for="(item, i) in localeOptions"
+            :key="i"
+            :value="item.value"
+            :active="item.value === localeValue"
+            color="primary"
+            @click="channelLocale.SetLocale(item.value)"
+          >
+            <template v-slot:prepend>
+              <v-icon :icon="item.icon"></v-icon>
+            </template>
+            <v-list-item-title v-text="item.label"></v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+      <!-- 主题切换按钮 -->
+      <MultiSwitch v-model="themeValue" size="24px" max-width="36px" :options="themeOptions"></MultiSwitch>
     </v-toolbar>
     <v-footer :border="true">
       <v-row justify="end" no-gutters>
@@ -22,24 +40,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useTheme } from 'vuetify';
+import i18n, { setLocale } from "@/languages/i18n";
 
-import { THEME_SYSTEM, THEME_DARK, THEME_LIGHT } from '@/consts';
+import {
+  THEME_SYSTEM,
+  THEME_DARK,
+  THEME_LIGHT,
+} from '@/consts';
 import ChannelTheme from "@/channels/Theme/web";
+import ChannelLocale from "@/channels/Locale/web";
 import ChannelProcess from "@/channels/Process/web";
 
 import MultiSwitch from "@/global/components/MultiSwitch/index.vue";
 
 const channelProcess = new ChannelProcess();
+const channelLocale = new ChannelLocale();
 const channelTheme = new ChannelTheme();
 
+/** #region Theme */
 const vueTheme = useTheme();
 
-const themeOptions = ref([
-  { value: THEME_SYSTEM, color: "black" },
-  { value: THEME_DARK, color: "black" },
-  { value: THEME_LIGHT, color: "white" },
+const themeOptions = ref<any[]>([
+  { value: THEME_SYSTEM, icon: "mdi-cellphone-link" },
+  { value: THEME_DARK, icon: "mdi-brightness-2" },
+  { value: THEME_LIGHT, icon: "mdi-brightness-5" },
 ])
 const themeValue = ref(THEME_SYSTEM);
 
@@ -57,14 +83,12 @@ channelTheme.OnSrcChanged(async (ev: any, src: string) => {
     // 否则获取当前是否使用暗色主题
     const isDark = await channelTheme.GetIsDark();
     vueTheme.global.name.value = isDark ? THEME_DARK : THEME_LIGHT;
-    themeOptions.value[0].color = isDark ? "black" : "white";
   }
 })
 // 系统的主题更新时触发回调
 channelTheme.OnSysUpdated((ev: any, isDark: boolean) => {
   // 获取当前是否使用暗色主题
   vueTheme.global.name.value = isDark ? THEME_DARK : THEME_LIGHT;
-  themeOptions.value[0].color = isDark ? "black" : "white";
 })
 // https://cn.vuejs.org/guide/built-ins/suspense.html#async-setup
 // NOTE: js下可以通过await关键词直接转换，但是ts会通不过语法检测
@@ -78,10 +102,29 @@ const asyncSetTheme = async () => {
     // 否则获取当前是否使用暗色主题
     const isDark = await channelTheme.GetIsDark();
     vueTheme.global.name.value = isDark ? THEME_DARK : THEME_LIGHT;
-    themeOptions.value[0].color = isDark ? "black" : "white";
   }
 }
 asyncSetTheme();
+/** #endregion */
+
+/** #region Locale */
+const localeOptions = ref<any[]>(Object.keys(i18n.translations).map((key) => ({
+  value: key, label: i18n.t(`locale.${key}.label`), icon: i18n.t(`locale.${key}.icon`),
+})));
+setLocale(navigator.language);
+const localeValue = ref(i18n.locale);
+
+channelLocale.OnLocaleChanged((ev: any, locale: string) => {
+  setLocale(locale);
+  localeValue.value = i18n.locale;
+})
+const asyncSetLocale = async () => {
+  const locale = await channelLocale.GetLocale();
+  setLocale(locale);
+  localeValue.value = i18n.locale;
+}
+asyncSetLocale();
+/** #endregion */
 </script>
 
 <style lang="scss" scoped>

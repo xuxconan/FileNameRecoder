@@ -1,8 +1,11 @@
 import { app, session, dialog, nativeTheme, BaseWindow, BrowserWindowConstructorOptions } from 'electron';
 import path from "node:path";
 
+import i18n, { setLocale } from '../languages/i18n';
+
 import Main from '../wins/Main';
 import Test from '../wins/Test';
+import ChannelLocale from "../channels/Locale/main";
 import ChannelTheme from "../channels/Theme/main";
 
 import { APP_SETTING_FILE } from '../consts';
@@ -42,6 +45,8 @@ export default class App {
     ChannelTheme.GetSrc();
     ChannelTheme.GetIsDark();
     ChannelTheme.ListenSysThemeUpdated();
+    ChannelLocale.SetLocale();
+    ChannelLocale.GetLocale();
 
     // 避免程序多开
     const singletonLock = app.requestSingleInstanceLock();
@@ -87,20 +92,26 @@ export default class App {
     })
 
     app.on("quit", () => {
-      settings.Write({ theme: nativeTheme.themeSource });
+      settings.Write({
+        theme: nativeTheme.themeSource,
+        locale: i18n.locale,
+      });
     })
   }
 
   async createMainWindow(options?: BrowserWindowConstructorOptions) {
     // 获取上次配置
     const settings = this.settings;
-    const { x, y, width, height, fullscreen, theme } = (await settings.Read()) ?? {};
+    const { x, y, width, height, fullscreen, theme, locale } = (await settings.Read()) ?? {};
     options.x = options.x ?? x;
     options.y = options.y ?? y;
     options.width = options.width ?? width ?? 800;
     options.height = options.height ?? height ?? 600;
     options.fullscreen = options.fullscreen ?? fullscreen ?? false;
     if (theme) nativeTheme.themeSource = theme;
+
+    // 设置默认语言
+    setLocale(locale ?? app.getSystemLocale());
 
     this.win = new Main({
       settings: settings,

@@ -1,7 +1,7 @@
 import { app, session, dialog, nativeTheme, BaseWindow, BrowserWindowConstructorOptions } from 'electron';
 import path from "node:path";
 
-import i18n, { setLocale } from '../languages/i18n';
+import i18n from '../libs/common/I18n';
 
 import Main from '../wins/Main';
 import Test from '../wins/Test';
@@ -111,7 +111,7 @@ export default class App {
     if (theme) nativeTheme.themeSource = theme;
 
     // 设置默认语言
-    setLocale(locale ?? app.getSystemLocale());
+    i18n.locale = locale ?? app.getSystemLocale();
 
     this.win = new Main({
       settings: settings,

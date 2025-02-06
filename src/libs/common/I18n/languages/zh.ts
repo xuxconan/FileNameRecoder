@@ -1,6 +1,6 @@
 export default {
-  name: "en",
-  test: "test",
+  name: "zh",
+  test: "测试",
 
   locale: {
     en: { label: "English", icon: "mdi-alphabet-latin", },
@@ -9,7 +9,8 @@ export default {
 
   web: {
     main: {
-      locale_options_title: "Languages",
+      app_title: "文件名重新编码器",
+      locale_options_title: "语言",
     },
   },
 }

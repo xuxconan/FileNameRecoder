@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <v-toolbar density="compact" :elevation="8" :title="channelProcess.Env.APP_TITLE">
+    <v-toolbar density="compact" :elevation="8" :title="i18n.t('web.main.app_title')">
       <v-spacer></v-spacer>
 
       <!-- 语言选择 -->
@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, reactive } from "vue";
 import { useTheme } from 'vuetify';
-import i18n, { setLocale } from "@/languages/i18n";
+import i18n from "@/libs/common/I18n";
 
 import {
   THEME_SYSTEM,
@@ -111,16 +111,16 @@ asyncSetTheme();
 const localeOptions = ref<any[]>(Object.keys(i18n.translations).map((key) => ({
   value: key, label: i18n.t(`locale.${key}.label`), icon: i18n.t(`locale.${key}.icon`),
 })));
-setLocale(navigator.language);
+i18n.locale = navigator.language;
 const localeValue = ref(i18n.locale);
 
 channelLocale.OnLocaleChanged((ev: any, locale: string) => {
-  setLocale(locale);
+  i18n.locale = locale;
   localeValue.value = i18n.locale;
 })
 const asyncSetLocale = async () => {
   const locale = await channelLocale.GetLocale();
-  setLocale(locale);
+  i18n.locale = locale;
   localeValue.value = i18n.locale;
 }
 asyncSetLocale();
